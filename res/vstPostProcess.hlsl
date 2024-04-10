@@ -77,6 +77,8 @@ cbuffer ConstantBuffer : register(b1)
     // Blur filter
     float blurScale;     // Blur kernel scale: 0=off, 1=full
     int blurKernelSize;  // Blur kernel size
+    float highPassCutoffFreq;  // High pass cutoff frequency
+    float3 _padding_b2_0;          // Padding
 }
 
 // Shader specific textures

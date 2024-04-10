@@ -53,6 +53,7 @@ struct AppState {
         bool blurEnabled{true};
         float blurScale{5.0f};
         int blurKernelSize{3};
+        float highPassCutoffFreq{5.0f};
 
         // Animation params
         bool animate{true};

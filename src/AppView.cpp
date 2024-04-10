@@ -84,7 +84,7 @@ const std::vector<std::pair<std::string, AppState::PostProcess>> c_guiPresets = 
             false, PostProcess::ShaderSource::None, PostProcess::GraphicsAPI::D3D11, TestTexture::Type::Noise,  //
             false, 0.0f, 0.0f, glm::vec4(0.0f), glm::vec4(0.0f), 0.0f, 0.0f,                                    // Color
             false, true, 0.0f, 0.0f,                                                                            // Noise
-            false, 0.0f, 0,                                                                                     // Blur
+            false, 0.0f, 0, 0.5f,                                                                                    // Blur
             false, 0.0f, 0.0f, 0.0f                                                                             // Animate
         }},
     {"Default",
@@ -92,7 +92,7 @@ const std::vector<std::pair<std::string, AppState::PostProcess>> c_guiPresets = 
             true, PostProcess::ShaderSource::Binary, PostProcess::GraphicsAPI::D3D11, TestTexture::Type::Noise,                                  //
             true, 1.0f, 0.0f, glm::vec4(210.0f, 220.0f, 130.0f, 255.0f) / 255.0f, glm::vec4(20.0f, 80.0f, 140.0f, 255.0f) / 255.0f, 1.0f, 2.0f,  // Color
             true, true, 0.1f, 1.0f,                                                                                                              // Noise
-            true, 5.0f, 7,                                                                                                                       // Blur
+            true, 5.0f, 7, 0.5f,                                                                                                                      // Blur
             true, 3.0f, 0.5f, 0.75f                                                                                                              // Animate
         }},
     {"Night Light",
@@ -100,7 +100,7 @@ const std::vector<std::pair<std::string, AppState::PostProcess>> c_guiPresets = 
             true, PostProcess::ShaderSource::Binary, PostProcess::GraphicsAPI::D3D11, TestTexture::Type::Noise,                                  //
             true, 1.0f, 1.0f, glm::vec4(28.0f, 97.0f, 225.0f, 255.0f) / 255.0f, glm::vec4(150.0f, 178.0f, 230.0f, 255.0f) / 255.0f, 0.4f, 4.0f,  // Color
             false, true, 0.0f, 0.0f,                                                                                                             // Noise
-            false, 0.0f, 0,                                                                                                                      // Blur
+            false, 0.0f, 0, 0.5f,                                                                                                                     // Blur
             true, 1.5f, 0.2f, 0.9f                                                                                                               // Animate
         }},
     {"IR Goggles",
@@ -108,7 +108,7 @@ const std::vector<std::pair<std::string, AppState::PostProcess>> c_guiPresets = 
             true, PostProcess::ShaderSource::Binary, PostProcess::GraphicsAPI::D3D11, TestTexture::Type::Noise,  //
             true, 1.0f, 0.0f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), 1.2f, 1.0f,  // Color
             true, true, 0.1f, 1.0f,                                                                              // Noise
-            true, 1.5f, 3,                                                                                       // Blur
+            true, 1.5f, 3, 0.5f,                                                                                      // Blur
             true, 6.0f, 0.15f, 1.0f                                                                              // Animate
         }},
     {"Purple Haze",
@@ -116,7 +116,7 @@ const std::vector<std::pair<std::string, AppState::PostProcess>> c_guiPresets = 
             true, PostProcess::ShaderSource::Binary, PostProcess::GraphicsAPI::D3D11, TestTexture::Type::Noise,                                  //
             true, 1.0f, 0.0f, glm::vec4(120.0f, 50.0f, 165.0f, 255.0f) / 255.0f, glm::vec4(190.0f, 50.0f, 225.0f, 255.0f) / 255.0f, 1.5f, 0.8f,  // Color
             true, true, 0.1f, 0.06f,                                                                                                             // Noise
-            true, 2.0f, 5,                                                                                                                       // Blur
+            true, 2.0f, 5, 0.5f,                                                                                                                      // Blur
             true, 4.0f, 0.4f, 1.0f                                                                                                               // Animate
         }},
     {"Sunshine",
@@ -124,7 +124,7 @@ const std::vector<std::pair<std::string, AppState::PostProcess>> c_guiPresets = 
             true, PostProcess::ShaderSource::Binary, PostProcess::GraphicsAPI::D3D11, TestTexture::Type::Noise,                                    //
             true, 1.0f, 0.0f, glm::vec4(224.0f, 220.0f, 155.0f, 255.0f) / 255.0f, glm::vec4(224.0f, 177.0f, 124.0f, 255.0f) / 255.0f, 2.0f, 1.0f,  // Color
             true, true, 0.03f, 0.07f,                                                                                                              // Noise
-            false, 0.0f, 0,                                                                                                                        // Blur
+            false, 0.0f, 0, 0.5f,                                                                                                                        // Blur
             true, 3.0f, 0.2f, 0.8f                                                                                                                 // Animate
         }},
     {"Blurry",
@@ -132,7 +132,7 @@ const std::vector<std::pair<std::string, AppState::PostProcess>> c_guiPresets = 
             true, PostProcess::ShaderSource::Binary, PostProcess::GraphicsAPI::D3D11, TestTexture::Type::Gradient,  //
             false, 0.0f, 0.0f, glm::vec4(0.0f), glm::vec4(0.0f), 0.0f, 0.0f,                                        // Color
             false, true, 0.0f, 0.0f,                                                                                // Noise
-            true, 3.0f, 9,                                                                                          // Blur
+            true, 3.0f, 9, 0.5f,                                                                                         // Blur
             true, 3.0f, 0.2f, 1.0f                                                                                  // Animate
         }},
 
@@ -514,8 +514,9 @@ void AppView::updateUI()
 
         ImGui::Text("REALITY FILTER SETTINGS");
         ImGui::Checkbox("High Pass Filter" _TAG, &appState.postProcess.blurEnabled);
-        ImGui::Checkbox("Low Pass Filter" _TAG, &appState.postProcess.blurEnabled);
-        ImGui::SliderFloat("Blur Scale" _TAG, &appState.postProcess.blurScale, 0.0f, 5.0f);
+        //ImGui::Checkbox("Low Pass Filter" _TAG, &appState.postProcess.blurEnabled);
+        ImGui::SliderFloat("High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.5f, 60.0f);
+        //ImGui::SliderFloat("Blur Scale" _TAG, &appState.postProcess.blurScale, 0.0f, 5.0f);
         ImGui::SliderInt("Kernel Size" _TAG, &appState.postProcess.blurKernelSize, 1, 20);
         ImGui::Dummy(ImVec2(0.0f, h));
 
