@@ -134,6 +134,23 @@ float3 getViewDir(in float2 ndcCoord, in float4x4 inverseProjection)
     return normalize(homogenize(viewPosEnd));
 }
 
+void calculateKernelParameters(float cpd, out int kernelSize, out float scale)
+{
+    // Varjo XR-3 specific PPD
+    float ppd = 70.0; // Update this value based on precise specifications or empirical findings
+
+    // Convert CPD to spatial frequency in pixels
+    float freqInPixels = cpd * 2.0 * ppd; 
+
+    // Inverse relationship between spatial frequency and kernel size
+    // This is a simple model; you may need to refine it based on empirical results
+    kernelSize = max(3, (int)(ppd / freqInPixels * 15.0)); // Ensure at least a kernel size of 3
+    kernelSize = kernelSize - (kernelSize % 2) + 1; // Ensure kernel size is odd
+
+    // Scale based on CPD, adjust as needed
+    scale = 1.0 - min(cpd / ppd, 1.0); // Simple linear scale, adjust based on needs
+}
+
 // -------------------------------------------------------------------------
 
 // Compute shader for high pass filtering
@@ -144,10 +161,15 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
 
     // Load source sample
     float4 origColor = inputTex.Load(int3(thisThread.xy, 0)).rgba;
-    float4 lowPassColor = origColor;
+    //float4 lowPassColor = origColor;
+    float4 lowPassColor = float4(0.0, 0.0, 0.0, 0.0);
 
     // Apply box blur
-    if (blurScale > 0.0) {
+    if (highPassCutoffFreq > 0.0) {
+	int kernelSize;
+	float myBlurScale;
+
+	calculateKernelParameters(highPassCutoffFreq, kernelSize, myBlurScale);
         const float2 uv = float2(thisThread) / sourceSize;
 
         float2 kernelScale = float2(1.0, 1.0) / sourceSize;
@@ -157,7 +179,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
         }
 
         // Kernel radius and count
-        const int kernelD = blurKernelSize;
+        const int kernelD = kernelSize; //blurKernelSize;
         const int kernelR = (kernelD >> 1);
         const int kernelN = (kernelD * kernelD);
         const float2 kernelOffs = (float2(kernelD, kernelD) * 0.5 - 0.5);
@@ -165,7 +187,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
         lowPassColor = float4(0.0, 0.0, 0.0, 0.0);
         for (int y = 0; y < kernelD; y++) {
             for (int x = 0; x < kernelD; x++) {
-                const float2 uvOffs = ((float2(x, y) - kernelOffs) * blurScale) * kernelScale;
+                const float2 uvOffs = ((float2(x, y) - kernelOffs) * myBlurScale) * kernelScale;
                 lowPassColor += inputTex.SampleLevel(SamplerLinearClamp, uv + uvOffs, 0.0, 0.0);
             }
         }
@@ -173,7 +195,8 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
     }
 
     // High pass filter: original - low pass
-    float4 highPassColor = origColor - lowPassColor;
+    float4 normalizer = float4(0.1, 0.1, 0.1, 0.1);
+    float4 highPassColor = origColor - lowPassColor;// + normalizer;
 
     // Optional: Adjust the high pass image to enhance visibility
     highPassColor.rgb = abs(highPassColor.rgb); // Enhance edges by taking absolute value
@@ -181,4 +204,5 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
 
     // Write output pixel. Alpha is preserved from the original.
     outputTex[thisThread.xy] = float4(highPassColor.rgb, origColor.a);
+    //outputTex[thisThread.xy] = float4(lowPassColor.rgb, origColor.a);
 }

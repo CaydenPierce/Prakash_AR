@@ -515,7 +515,7 @@ void AppView::updateUI()
         ImGui::Text("REALITY FILTER SETTINGS");
         ImGui::Checkbox("High Pass Filter" _TAG, &appState.postProcess.blurEnabled);
         //ImGui::Checkbox("Low Pass Filter" _TAG, &appState.postProcess.blurEnabled);
-        ImGui::SliderFloat("High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.5f, 60.0f);
+        ImGui::SliderFloat("High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.2f, 12.0f);
         //ImGui::SliderFloat("Blur Scale" _TAG, &appState.postProcess.blurScale, 0.0f, 5.0f);
         ImGui::SliderInt("Kernel Size" _TAG, &appState.postProcess.blurKernelSize, 1, 20);
         ImGui::Dummy(ImVec2(0.0f, h));
