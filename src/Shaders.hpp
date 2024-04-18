@@ -24,7 +24,8 @@ struct PostProcessConstantBuffer {
     float blurScale = 1.0f;                        //!< Blur scale: 0=off, 1=full
     int blurKernelSize = 1;                        //!< Blur kernel size
     float highPassCutoffFreq = 0.5f;                        //!< Freq to cutoff of high pass filter
-    float _padding1[3];
+    int filterType = 0;                            //what type of filter to apply
+    float _padding1[2];
 };
 
 // Shader parameters

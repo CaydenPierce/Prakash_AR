@@ -336,6 +336,7 @@ void AppLogic::updatePostProcessing()
     cBuffer.blurScale = state.blurEnabled ? state.blurScale * static_cast<float>(o + a * (0.25 * (sin(t * 1.013575) + sin(t * 1.26575)) - 0.5)) : 0.0f;
     cBuffer.highPassCutoffFreq = state.highPassCutoffFreq;
     cBuffer.blurKernelSize = state.blurKernelSize;
+    cBuffer.filterType = state.filterType;
 
     // List of shader input texture indices updated
     std::vector<int32_t> updatedTextures;

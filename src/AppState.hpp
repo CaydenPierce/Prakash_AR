@@ -63,6 +63,9 @@ struct AppState {
 
         // Animation timer
         double animTime{0.0};
+
+	//Filter
+	int filterType{0};
     };
 
     General general{};

@@ -513,12 +513,48 @@ void AppView::updateUI()
 #define _TAG "##blur"
 
         ImGui::Text("REALITY FILTER SETTINGS");
-        ImGui::Checkbox("High Pass Filter" _TAG, &appState.postProcess.blurEnabled);
+        //ImGui::Checkbox("High Pass Filter" _TAG, &appState.postProcess.blurEnabled);
         //ImGui::Checkbox("Low Pass Filter" _TAG, &appState.postProcess.blurEnabled);
-        ImGui::SliderFloat("High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.2f, 12.0f);
-        //ImGui::SliderFloat("Blur Scale" _TAG, &appState.postProcess.blurScale, 0.0f, 5.0f);
-        ImGui::SliderInt("Kernel Size" _TAG, &appState.postProcess.blurKernelSize, 1, 20);
-        ImGui::Dummy(ImVec2(0.0f, h));
+	//
+	//
+	//
+	
+	// Define an enum to represent the different filter modes
+	enum FilterMode {
+	    FILTER_NONE,
+	    FILTER_HIGH_PASS,
+	    FILTER_LOW_PASS,
+	    FILTER_INVERT,
+	    FILTER_KALEIDOSCOPE,
+	    FILTER_HIGH_PASS_SPECIAL
+	};
+
+	// Radio buttons for selecting the filter mode
+	ImGui::RadioButton("No Filter", &appState.postProcess.filterType, FILTER_NONE);
+	ImGui::RadioButton("High Pass Filter", &appState.postProcess.filterType, FILTER_HIGH_PASS);
+	ImGui::RadioButton("Low Pass Filter", &appState.postProcess.filterType, FILTER_LOW_PASS);
+	ImGui::RadioButton("Invert Colors", &appState.postProcess.filterType, FILTER_INVERT);
+	ImGui::RadioButton("Kaleidoscope", &appState.postProcess.filterType, FILTER_KALEIDOSCOPE);
+	ImGui::RadioButton("SPECIAL High Pass Filter", &appState.postProcess.filterType, FILTER_HIGH_PASS_SPECIAL);
+
+	// Depending on the selected filter mode, show appropriate sliders
+	if (appState.postProcess.filterType == FILTER_HIGH_PASS) {
+	    ImGui::SliderFloat("High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.2f, 12.0f);
+	    // Add any other relevant sliders or settings for High Pass Filter
+	}
+
+	if (appState.postProcess.filterType == FILTER_HIGH_PASS_SPECIAL) {
+	    ImGui::SliderFloat("SPECIAL High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.2f, 12.0f);
+	    // Add any other relevant sliders or settings for High Pass Filter
+	}
+
+	if (appState.postProcess.filterType == FILTER_LOW_PASS) {
+	    //ImGui::SliderFloat("Low Pass Frequency Cutoff" _TAG, &appState.postProcess.lowPassCutoffFreq, 0.2f, 12.0f);
+	    ImGui::SliderFloat("Low Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.2f, 12.0f);
+	    // Add any other relevant sliders or settings for Low Pass Filter
+	}
+
+	ImGui::Dummy(ImVec2(0.0f, h));
 
 // Define section tag for unique names
 // #undef _TAG

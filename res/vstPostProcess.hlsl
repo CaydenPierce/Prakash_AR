@@ -78,7 +78,8 @@ cbuffer ConstantBuffer : register(b1)
     float blurScale;     // Blur kernel scale: 0=off, 1=full
     int blurKernelSize;  // Blur kernel size
     float highPassCutoffFreq;  // High pass cutoff frequency
-    float3 _padding_b2_0;          // Padding
+    int filterType;
+    float2 _padding_b2_0;          // Padding
 }
 
 // Shader specific textures
@@ -152,6 +153,7 @@ void calculateKernelParameters(float cpd, out int kernelSize, out float scale)
 }
 
 // -------------------------------------------------------------------------
+#define PI 3.1415926535897932384626433832795
 
 // Compute shader for high pass filtering
 [numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]
@@ -161,48 +163,98 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
 
     // Load source sample
     float4 origColor = inputTex.Load(int3(thisThread.xy, 0)).rgba;
-    //float4 lowPassColor = origColor;
-    float4 lowPassColor = float4(0.0, 0.0, 0.0, 0.0);
+    float4 finalColor = origColor;
 
-    // Apply box blur
-    if (highPassCutoffFreq > 0.0) {
-	int kernelSize;
-	float myBlurScale;
-
-	calculateKernelParameters(highPassCutoffFreq, kernelSize, myBlurScale);
-        const float2 uv = float2(thisThread) / sourceSize;
-
-        float2 kernelScale = float2(1.0, 1.0) / sourceSize;
-        if (viewIndex == VIEW_FOCUS_L || viewIndex == VIEW_FOCUS_R) {
-            float2 focusSize = sourceFocusRect.zw - sourceFocusRect.xy;
-            kernelScale = float2(1.0, 1.0) / float2(focusSize);
-        }
-
-        // Kernel radius and count
-        const int kernelD = kernelSize; //blurKernelSize;
-        const int kernelR = (kernelD >> 1);
-        const int kernelN = (kernelD * kernelD);
-        const float2 kernelOffs = (float2(kernelD, kernelD) * 0.5 - 0.5);
-
-        lowPassColor = float4(0.0, 0.0, 0.0, 0.0);
-        for (int y = 0; y < kernelD; y++) {
-            for (int x = 0; x < kernelD; x++) {
-                const float2 uvOffs = ((float2(x, y) - kernelOffs) * myBlurScale) * kernelScale;
-                lowPassColor += inputTex.SampleLevel(SamplerLinearClamp, uv + uvOffs, 0.0, 0.0);
-            }
-        }
-        lowPassColor /= kernelN;
+    //Invert filter
+    if (filterType == 3) { // invert colors
+        finalColor.rgb = 1.0 - origColor.rgb;
     }
 
-    // High pass filter: original - low pass
-    float4 normalizer = float4(0.1, 0.1, 0.1, 0.1);
-    float4 highPassColor = origColor - lowPassColor;// + normalizer;
+    //kaleidoscope filter
+    if (filterType == 4) { // Assuming 4 is the type for the kaleidoscope effect
+        // Convert pixel coordinates to normalized [-1, 1] range centered at texture center
+        float2 uv = (float2(thisThread.xy) - 0.5 * sourceSize) / sourceSize.y;
 
-    // Optional: Adjust the high pass image to enhance visibility
-    highPassColor.rgb = abs(highPassColor.rgb); // Enhance edges by taking absolute value
-    highPassColor.rgb = min(highPassColor.rgb * 5.0, 1.0); // Scale and clamp values to [0, 1]
+        // Convert to polar coordinates
+        float radius = length(uv);
+        float angle = atan2(uv.y, uv.x);
+
+        // Define the number of segments
+        const int numSegments = 3; // Adjust for different "trippy" effects
+
+        // Reflect angle within a segment and rotate
+        float segmentAngle = 2 * PI / numSegments;
+        float mirroredAngle = abs(fmod(angle + segmentAngle / 2, segmentAngle) - segmentAngle / 2);
+        float newAngle = mirroredAngle * numSegments;
+
+        // Convert back to Cartesian coordinates and scale back to texture coordinates
+        float2 newUV = radius * float2(cos(newAngle), sin(newAngle));
+        newUV = 0.5 * sourceSize.y * newUV + 0.5 * sourceSize; // Adjusting to texture size
+
+        // Convert to pixel coordinates
+        int2 texCoords = int2(newUV.x, newUV.y);
+
+        // Sample the texture
+        finalColor = inputTex.Load(int3(texCoords, 0));
+    }
+
+    //High and low pass filters
+    if (filterType == 1 || filterType == 2 || filterType == 5) {
+        //float4 lowPassColor = origColor;
+        float4 lowPassColor = float4(0.0, 0.0, 0.0, 0.0);
+
+        // Apply box blur
+        if (highPassCutoffFreq > 0.0) {
+            int kernelSize;
+            float myBlurScale;
+
+            calculateKernelParameters(highPassCutoffFreq, kernelSize, myBlurScale);
+            const float2 uv = float2(thisThread) / sourceSize;
+
+            float2 kernelScale = float2(1.0, 1.0) / sourceSize;
+            if (viewIndex == VIEW_FOCUS_L || viewIndex == VIEW_FOCUS_R) {
+                float2 focusSize = sourceFocusRect.zw - sourceFocusRect.xy;
+                kernelScale = float2(1.0, 1.0) / float2(focusSize);
+            }
+
+            // Kernel radius and count
+            const int kernelD = kernelSize; //blurKernelSize;
+            const int kernelR = (kernelD >> 1);
+            const int kernelN = (kernelD * kernelD);
+            const float2 kernelOffs = (float2(kernelD, kernelD) * 0.5 - 0.5);
+
+            lowPassColor = float4(0.0, 0.0, 0.0, 0.0);
+            for (int y = 0; y < kernelD; y++) {
+                for (int x = 0; x < kernelD; x++) {
+                    const float2 uvOffs = ((float2(x, y) - kernelOffs) * myBlurScale) * kernelScale;
+                    lowPassColor += inputTex.SampleLevel(SamplerLinearClamp, uv + uvOffs, 0.0, 0.0);
+                }
+            }
+            lowPassColor /= kernelN;
+        }
+
+        if (filterType == 1 || filterType == 5) { //regular high pass filter
+            // High pass filter: original - low pass
+            finalColor = origColor - lowPassColor;
+        }
+
+        if (filterType == 2) { //regular high pass filter
+            finalColor = lowPassColor;
+        }
+
+        //add normalizer if needed
+        float4 normalizer = float4(0.35, 0.35, 0.35, 0.35);
+        if (filterType == 1) { //high pass filter
+            finalColor = finalColor + normalizer;
+        }
+
+        if (filterType == 5) { //SPECIAL trippy high pass filter
+            // Optional: Adjust the high pass image to enhance visibility
+            finalColor.rgb = abs(finalColor.rgb); // Enhance edges by taking absolute value
+            finalColor.rgb = min(finalColor.rgb * 5.0, 1.0); // Scale and clamp values to [0, 1]
+        }
+    } //end high/low pass logic
 
     // Write output pixel. Alpha is preserved from the original.
-    outputTex[thisThread.xy] = float4(highPassColor.rgb, origColor.a);
-    //outputTex[thisThread.xy] = float4(lowPassColor.rgb, origColor.a);
+    outputTex[thisThread.xy] = float4(finalColor.rgb, origColor.a);
 }
