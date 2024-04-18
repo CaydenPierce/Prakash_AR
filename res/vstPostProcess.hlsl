@@ -135,6 +135,7 @@ float3 getViewDir(in float2 ndcCoord, in float4x4 inverseProjection)
     return normalize(homogenize(viewPosEnd));
 }
 
+/*
 void calculateKernelParameters(float cpd, out int kernelSize, out float scale)
 {
     // Varjo XR-3 specific PPD
@@ -151,6 +152,27 @@ void calculateKernelParameters(float cpd, out int kernelSize, out float scale)
     // Scale based on CPD, adjust as needed
     scale = 1.0 - min(cpd / ppd, 1.0); // Simple linear scale, adjust based on needs
 }
+*/
+
+void calculateKernelParameters(float cpd, out int kernelSize, out float scale)
+{
+    // Update this value based on precise specifications or empirical findings
+    float ppd = 70.0; // This should be calculated from display size, resolution, and viewing distance
+
+    // Convert CPD to spatial frequency in pixels
+    float freqInPixels = cpd * ppd;
+
+    // The kernel size is inversely proportional to the frequency in pixels
+    // We use a formula that scales with the reciprocal of the frequency
+    // Ensuring a minimum kernel size of 3 and making sure it's an odd number for symmetric kernel application
+    kernelSize = max(3, (int)(ppd / freqInPixels));
+    kernelSize = kernelSize + (kernelSize % 2 == 0 ? 1 : 0); // Make sure the kernel size is odd
+
+    // Scale the effect of the kernel based on the CPD and PPD
+    // This scale can be adjusted based on empirical results to optimize visual quality
+    scale = 1.0 - min(cpd / ppd, 1.0); // Simple linear scale
+}
+
 
 // -------------------------------------------------------------------------
 #define PI 3.1415926535897932384626433832795
