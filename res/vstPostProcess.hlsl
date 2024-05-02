@@ -172,31 +172,34 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
 
     //kaleidoscope filter
     if (filterType == 4) { // Assuming 4 is the type for the kaleidoscope effect
-        // Convert pixel coordinates to normalized [-1, 1] range centered at texture center
-        float2 uv = (float2(thisThread.xy) - 0.5 * sourceSize) / sourceSize.y;
+        if (viewIndex != VIEW_FOCUS_L && viewIndex != VIEW_FOCUS_R) {
+		// Convert pixel coordinates to normalized [-1, 1] range centered at texture center
+		float2 uv = (float2(thisThread.xy) - 0.5 * sourceSize) / sourceSize.y;
 
-        // Convert to polar coordinates
-        float radius = length(uv);
-        float angle = atan2(uv.y, uv.x);
+		// Convert to polar coordinates
+		float radius = length(uv);
+		float angle = atan2(uv.y, uv.x);
 
-        // Define the number of segments
-        const int numSegments = 3; // Adjust for different "trippy" effects
+		// Define the number of segments
+		const int numSegments = 3; // Adjust for different "trippy" effects
 
-        // Reflect angle within a segment and rotate
-        float segmentAngle = 2 * PI / numSegments;
-        float mirroredAngle = abs(fmod(angle + segmentAngle / 2, segmentAngle) - segmentAngle / 2);
-        float newAngle = mirroredAngle * numSegments;
+		// Reflect angle within a segment and rotate
+		float segmentAngle = 2 * PI / numSegments;
+		float mirroredAngle = abs(fmod(angle + segmentAngle / 2, segmentAngle) - segmentAngle / 2);
+		float newAngle = mirroredAngle * numSegments;
 
-        // Convert back to Cartesian coordinates and scale back to texture coordinates
-        float2 newUV = radius * float2(cos(newAngle), sin(newAngle));
-        newUV = 0.5 * sourceSize.y * newUV + 0.5 * sourceSize; // Adjusting to texture size
+		// Convert back to Cartesian coordinates and scale back to texture coordinates
+		float2 newUV = radius * float2(cos(newAngle), sin(newAngle));
+		newUV = 0.5 * sourceSize.y * newUV + 0.5 * sourceSize; // Adjusting to texture size
 
-        // Convert to pixel coordinates
-        int2 texCoords = int2(newUV.x, newUV.y);
+		// Convert to pixel coordinates
+		int2 texCoords = int2(newUV.x, newUV.y);
 
-        // Sample the texture
-        finalColor = inputTex.Load(int3(texCoords, 0));
+		// Sample the texture
+		finalColor = inputTex.Load(int3(texCoords, 0));
+	}
     }
+
 
     //High and low pass filters
     if (filterType == 1 || filterType == 2 || filterType == 5) {

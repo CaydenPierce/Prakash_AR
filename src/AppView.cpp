@@ -539,18 +539,18 @@ void AppView::updateUI()
 
 	// Depending on the selected filter mode, show appropriate sliders
 	if (appState.postProcess.filterType == FILTER_HIGH_PASS) {
-	    ImGui::SliderFloat("High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.2f, 12.0f);
+	    ImGui::SliderFloat("High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.25f, 12.0f);
 	    // Add any other relevant sliders or settings for High Pass Filter
 	}
 
 	if (appState.postProcess.filterType == FILTER_HIGH_PASS_SPECIAL) {
-	    ImGui::SliderFloat("SPECIAL High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.2f, 12.0f);
+	    ImGui::SliderFloat("SPECIAL High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.25f, 12.0f);
 	    // Add any other relevant sliders or settings for High Pass Filter
 	}
 
 	if (appState.postProcess.filterType == FILTER_LOW_PASS) {
 	    //ImGui::SliderFloat("Low Pass Frequency Cutoff" _TAG, &appState.postProcess.lowPassCutoffFreq, 0.2f, 12.0f);
-	    ImGui::SliderFloat("Low Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.2f, 12.0f);
+	    ImGui::SliderFloat("Low Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.25f, 12.0f);
 	    // Add any other relevant sliders or settings for Low Pass Filter
 	}
 
