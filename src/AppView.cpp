@@ -331,16 +331,62 @@ bool AppView::onFrame(UI& ui)
     // Return true to continue running
     return true;
 }
+float clip(float n, float lower, float upper) {
+    return std::max(lower, std::min(n, upper));
+}
 
 void AppView::onKeyPress(UI& ui, int keyCode)
 {
+
+    float inc = 0.1f;
+    AppState appState = m_logic.getState();
+    enum FilterMode {
+        FILTER_NONE,
+        FILTER_HIGH_PASS,
+        FILTER_LOW_PASS,
+        FILTER_INVERT,
+        FILTER_KALEIDOSCOPE,
+        FILTER_HIGH_PASS_SPECIAL
+    };
+
+    switch (keyCode) {
+    case 65: // Key code for 'A'
+        appState.postProcess.filterType = FILTER_HIGH_PASS_SPECIAL;
+        m_logic.setState(appState, false);
+        break;
+    case 66: // Key code for 'B'
+        appState.postProcess.filterType = FILTER_HIGH_PASS;
+        m_logic.setState(appState, false);
+        break;
+    case 67: // Key code for 'C'
+        appState.postProcess.filterType = FILTER_LOW_PASS;
+        m_logic.setState(appState, false);
+        break;
+    case 68: // Key code for 'D'
+        appState.postProcess.filterType = FILTER_INVERT;
+        m_logic.setState(appState, false);
+        break;
+    case 81: // down
+        appState.postProcess.highPassCutoffFreq = clip(appState.postProcess.highPassCutoffFreq-inc, 0.25f,12.0f);
+        m_logic.setState(appState, false);
+        break;
+    case 87: // up
+        appState.postProcess.highPassCutoffFreq = clip(appState.postProcess.highPassCutoffFreq + inc, 0.25f, 12.0f);
+        m_logic.setState(appState, false);
+        break;
+    default:
+        break;
+    }
+
+
+
     if (m_uiState.anyItemActive) {
         // Ignore key handling if UI items active
         return;
     }
 
     bool stateDirty = false;
-    auto appState = m_logic.getState();
+ 
 
     // Check for input action
     Action action = Action::None;
@@ -458,7 +504,7 @@ void AppView::updateUI()
 
         {
             std::array<char*, 3> items = {"None", "Binary Blob", "HLSL Source"};
-            //ImGui::Combo("Shader source", &m_uiState.postProcessShaderSourceIndex, items.data(), static_cast<int>(items.size()));
+            //ImGui::Combo("Shader source", &m_uiState.postProcessShaderSourceIndex, iteabms.data(), static_cast<int>(items.size()));
             appState.postProcess.shaderSource = static_cast<VarjoExamples::PostProcess::ShaderSource>(m_uiState.postProcessShaderSourceIndex);
         }
 
@@ -537,7 +583,7 @@ void AppView::updateUI()
 	ImGui::RadioButton("Kaleidoscope", &appState.postProcess.filterType, FILTER_KALEIDOSCOPE);
 	ImGui::RadioButton("SPECIAL High Pass Filter", &appState.postProcess.filterType, FILTER_HIGH_PASS_SPECIAL);
 
-	// Depending on the selected filter mode, show appropriate sliders
+	// Depending on the selected filter mode, show appropriate slidersdbada
 	if (appState.postProcess.filterType == FILTER_HIGH_PASS) {
 	    ImGui::SliderFloat("High Pass Frequency Cutoff" _TAG, &appState.postProcess.highPassCutoffFreq, 0.25f, 12.0f);
 	    // Add any other relevant sliders or settings for High Pass Filter
